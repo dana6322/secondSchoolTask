@@ -20,21 +20,32 @@ export const userData = {
 };
 
 export const getLogedInUser = async (app: Express): Promise<UserData> => {
+  // Create a unique email for each test to avoid conflicts when running tests together
+  const uniqueEmail = `test-${Date.now()}-${Math.random().toString(36).substr(2, 9)}@test.com`;
+  const testUser = {
+    email: uniqueEmail,
+    password: "testpass",
+    userName: `testuser-${Date.now()}`,
+  };
+
   let response = await request(app)
     .post("/auth/register")
-    .send({ ...userData });
+    .send(testUser);
+  
+  // If registration fails, try to login with the unique credentials
   if (response.status !== 201) {
     response = await request(app)
       .post("/auth/login")
-      .send({ email: userData.email, password: userData.password });
+      .send({ email: testUser.email, password: testUser.password });
   }
+  
   const logedUser = {
     _id: response.body._id,
     token: response.body.token,
     refreshToken: response.body.refreshToken,
-    email: userData.email,
-    password: userData.password,
-    userName: userData.userName,
+    email: testUser.email,
+    password: testUser.password,
+    userName: testUser.userName,
   };
   return logedUser;
 };
