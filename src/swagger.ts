@@ -54,6 +54,18 @@ const options: swaggerJsdoc.Options = {
               description: "ID of the user who created the post",
               example: "507f1f77bcf86cd799439012",
             },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Post creation timestamp",
+              example: "2026-01-31T10:00:00.000Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Post last update timestamp",
+              example: "2026-01-31T11:00:00.000Z",
+            },
           },
         },
         User: {
@@ -81,6 +93,26 @@ const options: swaggerJsdoc.Options = {
               description: "User password (hashed)",
               example: "password123",
             },
+            firstName: {
+              type: "string",
+              description: "User's first name",
+              example: "John",
+            },
+            lastName: {
+              type: "string",
+              description: "User's last name",
+              example: "Doe",
+            },
+            bio: {
+              type: "string",
+              description: "User's biography/description",
+              example: "I love coding and photography",
+            },
+            profilePicture: {
+              type: "string",
+              description: "URL to user's profile picture",
+              example: "https://example.com/profile.jpg",
+            },
             refreshTokens: {
               type: "array",
               items: {
@@ -88,6 +120,18 @@ const options: swaggerJsdoc.Options = {
               },
               description: "Array of refresh tokens",
               example: ["token1", "token2"],
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "User account creation timestamp",
+              example: "2026-01-31T10:00:00.000Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "User profile last update timestamp",
+              example: "2026-01-31T11:00:00.000Z",
             },
           },
         },
@@ -114,6 +158,18 @@ const options: swaggerJsdoc.Options = {
               type: "string",
               description: "ID of the user who wrote the comment",
               example: "507f1f77bcf86cd799439012",
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Comment creation timestamp",
+              example: "2026-01-31T10:00:00.000Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Comment last update timestamp",
+              example: "2026-01-31T11:00:00.000Z",
             },
           },
         },
@@ -179,6 +235,34 @@ const options: swaggerJsdoc.Options = {
             refreshToken: {
               type: "string",
               description: "JWT refresh token",
+              example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+            },
+          },
+        },
+        ChangePasswordRequest: {
+          type: "object",
+          required: ["currentPassword", "newPassword"],
+          properties: {
+            currentPassword: {
+              type: "string",
+              description: "User's current password",
+              example: "oldPassword123",
+            },
+            newPassword: {
+              type: "string",
+              minLength: 6,
+              description: "User's new password (minimum 6 characters)",
+              example: "newPassword123",
+            },
+          },
+        },
+        LogoutRequest: {
+          type: "object",
+          required: ["refreshToken"],
+          properties: {
+            refreshToken: {
+              type: "string",
+              description: "JWT refresh token to invalidate",
               example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
             },
           },

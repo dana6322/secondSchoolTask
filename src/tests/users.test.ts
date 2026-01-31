@@ -50,8 +50,6 @@ describe("Users Test Suite", () => {
 
   test("Update User - succeeds for own user", async () => {
     const updateData = {
-      email: loginUser.email,
-      password: loginUser.password,
       userName: "updatedusername",
     };
     const response = await request(app)
@@ -126,5 +124,71 @@ describe("Users Test Suite", () => {
   test("Get non-existent user returns 404", async () => {
     const response = await request(app).get("/user/507f1f77bcf86cd799439099");
     expect(response.status).toBe(404);
+  });
+
+  test("Get current user profile without authentication fails", async () => {
+    const response = await request(app).get("/user/me");
+    expect(response.status).toBe(401);
+  });
+
+  test("Get current user profile succeeds", async () => {
+    const response = await request(app)
+      .get("/user/me")
+      .set("Authorization", "Bearer " + loginUser.token);
+    expect(response.status).toBe(200);
+    expect(response.body._id).toBe(loginUser._id);
+    expect(response.body.email).toBe(loginUser.email);
+    expect(response.body).toHaveProperty("firstName");
+    expect(response.body).toHaveProperty("lastName");
+    expect(response.body).toHaveProperty("bio");
+    expect(response.body).toHaveProperty("profilePicture");
+    expect(response.body).toHaveProperty("createdAt");
+    expect(response.body).toHaveProperty("updatedAt");
+    expect(response.body).not.toHaveProperty("password");
+    expect(response.body).not.toHaveProperty("refreshTokens");
+  });
+
+  test("Update user profile with new fields succeeds", async () => {
+    const updateData = {
+      firstName: "John",
+      lastName: "Doe",
+      bio: "This is my bio",
+      profilePicture: "https://example.com/pic.jpg",
+    };
+    const response = await request(app)
+      .put("/user/" + loginUser._id)
+      .set("Authorization", "Bearer " + loginUser.token)
+      .send(updateData);
+    expect(response.status).toBe(200);
+    expect(response.body.firstName).toBe(updateData.firstName);
+    expect(response.body.lastName).toBe(updateData.lastName);
+    expect(response.body.bio).toBe(updateData.bio);
+    expect(response.body.profilePicture).toBe(updateData.profilePicture);
+  });
+
+  test("Update user profile - prevent password change via PUT", async () => {
+    const updateData = {
+      firstName: "Jane",
+      password: "newPassword123",
+    };
+    const response = await request(app)
+      .put("/user/" + loginUser._id)
+      .set("Authorization", "Bearer " + loginUser.token)
+      .send(updateData);
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/password/i);
+  });
+
+  test("Update user profile - prevent email change via PUT", async () => {
+    const updateData = {
+      firstName: "Jane",
+      email: "newemail@test.com",
+    };
+    const response = await request(app)
+      .put("/user/" + loginUser._id)
+      .set("Authorization", "Bearer " + loginUser.token)
+      .send(updateData);
+    expect(response.status).toBe(400);
+    expect(response.body.message).toMatch(/email/i);
   });
 });

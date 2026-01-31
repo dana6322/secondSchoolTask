@@ -161,4 +161,102 @@ describe("Test Auth Suite", () => {
       .send({ refreshToken: logoutRefreshToken });
     expect(refreshAfterLogout.status).toBe(401);
   });
+
+  test("Test changePassword without token fails", async () => {
+    const response = await request(app)
+      .post("/auth/changePassword")
+      .send({
+        currentPassword: "password123",
+        newPassword: "newPassword123",
+      });
+    expect(response.status).toBe(401);
+  });
+
+  test("Test changePassword with incorrect current password fails", async () => {
+    const uniqueEmail = `changepass${Date.now()}@example.com`;
+    const registerResponse = await request(app)
+      .post("/auth/register")
+      .send({
+        email: uniqueEmail,
+        password: "correctPassword123",
+        userName: `changepassuser${Date.now()}`,
+      });
+    expect(registerResponse.status).toBe(201);
+    const token = registerResponse.body.token;
+
+    const response = await request(app)
+      .post("/auth/changePassword")
+      .set("Authorization", "Bearer " + token)
+      .send({
+        currentPassword: "wrongPassword123",
+        newPassword: "newPassword123",
+      });
+    expect(response.status).toBe(401);
+    expect(response.body.message).toBe("Current password is incorrect");
+  });
+
+  test("Test changePassword with same password fails", async () => {
+    const uniqueEmail = `samepass${Date.now()}@example.com`;
+    const password = "password123";
+    const registerResponse = await request(app)
+      .post("/auth/register")
+      .send({
+        email: uniqueEmail,
+        password: password,
+        userName: `samepassuser${Date.now()}`,
+      });
+    expect(registerResponse.status).toBe(201);
+    const token = registerResponse.body.token;
+
+    const response = await request(app)
+      .post("/auth/changePassword")
+      .set("Authorization", "Bearer " + token)
+      .send({
+        currentPassword: password,
+        newPassword: password,
+      });
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe(
+      "New password must be different from current password"
+    );
+  });
+
+  test("Test changePassword succeeds", async () => {
+    const uniqueEmail = `changepasssuccess${Date.now()}@example.com`;
+    const oldPassword = "oldPassword123";
+    const newPassword = "newPassword456";
+    const registerResponse = await request(app)
+      .post("/auth/register")
+      .send({
+        email: uniqueEmail,
+        password: oldPassword,
+        userName: `changepasssuccessuser${Date.now()}`,
+      });
+    expect(registerResponse.status).toBe(201);
+    const token = registerResponse.body.token;
+
+    // Change password
+    const changeResponse = await request(app)
+      .post("/auth/changePassword")
+      .set("Authorization", "Bearer " + token)
+      .send({
+        currentPassword: oldPassword,
+        newPassword: newPassword,
+      });
+    expect(changeResponse.status).toBe(200);
+    expect(changeResponse.body.message).toBe("Password changed successfully");
+
+    // Try to login with old password - should fail
+    const loginOldResponse = await request(app)
+      .post("/auth/login")
+      .send({ email: uniqueEmail, password: oldPassword });
+    expect(loginOldResponse.status).toBe(401);
+
+    // Try to login with new password - should succeed
+    const loginNewResponse = await request(app)
+      .post("/auth/login")
+      .send({ email: uniqueEmail, password: newPassword });
+    expect(loginNewResponse.status).toBe(200);
+    expect(loginNewResponse.body).toHaveProperty("token");
+  });
 });

@@ -61,6 +61,8 @@ describe("Sample Test Suite", () => {
       expect(response.body.message).toBe(comment.message);
       expect(response.body.postId).toBe(comment.postId);
       expect(response.body.sender).toBe(loginUser._id);
+      expect(response.body).toHaveProperty("createdAt");
+      expect(response.body).toHaveProperty("updatedAt");
     }
   });
 
@@ -88,6 +90,8 @@ describe("Sample Test Suite", () => {
     expect(response.body.postId).toBe(commentsList[0].postId);
     expect(response.body.sender).toBe(loginUser._id);
     expect(response.body._id).toBe(commentId);
+    expect(response.body).toHaveProperty("createdAt");
+    expect(response.body).toHaveProperty("updatedAt");
   });
 
   test("Update Comment", async () => {
