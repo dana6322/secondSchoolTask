@@ -316,6 +316,8 @@ router.get("/me", authenticate, userController.getCurrentUser.bind(userControlle
  */
 router.get("/:id", userController.getById.bind(userController));
 
+router.get("/me", authenticate, userController.getCurrentUser.bind(userController));
+
 router.post("/", authenticate, userController.create.bind(userController));
 
 router.delete("/:id", authenticate, userController.del.bind(userController));

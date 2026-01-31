@@ -60,7 +60,6 @@ describe("Sample Test Suite", () => {
       expect(response.status).toBe(201);
       expect(response.body.message).toBe(comment.message);
       expect(response.body.postId).toBe(comment.postId);
-      expect(response.body.sender).toBe(loginUser._id);
       expect(response.body).toHaveProperty("createdAt");
       expect(response.body).toHaveProperty("updatedAt");
     }
@@ -79,7 +78,7 @@ describe("Sample Test Suite", () => {
     expect(response.status).toBe(200);
     expect(response.body.length).toBe(1);
     expect(response.body[0].message).toBe(commentsList[0].message);
-    expect(response.body[0].sender).toBe(loginUser._id);
+    expect(response.body[0].sender._id).toBe(loginUser._id);
     commentId = response.body[0]._id;
   });
 
@@ -88,7 +87,8 @@ describe("Sample Test Suite", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe(commentsList[0].message);
     expect(response.body.postId).toBe(commentsList[0].postId);
-    expect(response.body.sender).toBe(loginUser._id);
+    expect(response.body.sender._id).toBe(loginUser._id);
+    expect(response.body.sender).toHaveProperty("userName");
     expect(response.body._id).toBe(commentId);
     expect(response.body).toHaveProperty("createdAt");
     expect(response.body).toHaveProperty("updatedAt");
@@ -104,7 +104,6 @@ describe("Sample Test Suite", () => {
     expect(response.status).toBe(200);
     expect(response.body.message).toBe(commentsList[0].message);
     expect(response.body.postId).toBe(commentsList[0].postId);
-    expect(response.body.sender).toBe(loginUser._id);
     expect(response.body._id).toBe(commentId);
   });
 

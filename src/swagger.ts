@@ -173,6 +173,114 @@ const options: swaggerJsdoc.Options = {
             },
           },
         },
+        PostWithPopulatedSender: {
+          type: "object",
+          required: ["text", "img"],
+          properties: {
+            _id: {
+              type: "string",
+              description: "Post ID (MongoDB ObjectId)",
+              example: "507f1f77bcf86cd799439011",
+            },
+            text: {
+              type: "string",
+              description: "Post text content",
+              example: "Check out this amazing photo!",
+            },
+            img: {
+              type: "string",
+              description: "Post image URL",
+              example: "https://example.com/image.jpg",
+            },
+            sender: {
+              type: "object",
+              description: "User object with limited fields (ID, username, and profile picture)",
+              properties: {
+                _id: {
+                  type: "string",
+                  description: "User ID",
+                  example: "507f1f77bcf86cd799439012",
+                },
+                userName: {
+                  type: "string",
+                  description: "User's username",
+                  example: "johndoe",
+                },
+                profilePicture: {
+                  type: "string",
+                  description: "URL to user's profile picture",
+                  example: "https://example.com/profile.jpg",
+                },
+              },
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Post creation timestamp",
+              example: "2026-01-31T10:00:00.000Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Post last update timestamp",
+              example: "2026-01-31T11:00:00.000Z",
+            },
+          },
+        },
+        CommentWithPopulatedSender: {
+          type: "object",
+          required: ["message", "postId"],
+          properties: {
+            _id: {
+              type: "string",
+              description: "Comment ID (MongoDB ObjectId)",
+              example: "507f1f77bcf86cd799439013",
+            },
+            message: {
+              type: "string",
+              description: "Comment message content",
+              example: "Great post!",
+            },
+            postId: {
+              type: "string",
+              description: "ID of the post being commented on",
+              example: "507f1f77bcf86cd799439011",
+            },
+            sender: {
+              type: "object",
+              description: "User object with limited fields (ID, username, and profile picture)",
+              properties: {
+                _id: {
+                  type: "string",
+                  description: "User ID",
+                  example: "507f1f77bcf86cd799439012",
+                },
+                userName: {
+                  type: "string",
+                  description: "User's username",
+                  example: "johndoe",
+                },
+                profilePicture: {
+                  type: "string",
+                  description: "URL to user's profile picture",
+                  example: "https://example.com/profile.jpg",
+                },
+              },
+            },
+            createdAt: {
+              type: "string",
+              format: "date-time",
+              description: "Comment creation timestamp",
+              example: "2026-01-31T10:00:00.000Z",
+            },
+            updatedAt: {
+              type: "string",
+              format: "date-time",
+              description: "Comment last update timestamp",
+              example: "2026-01-31T11:00:00.000Z",
+            },
+          },
+        },
         LoginRequest: {
           type: "object",
           required: ["email", "password"],
@@ -493,7 +601,7 @@ const manualPaths = {
             "application/json": {
               schema: {
                 type: "array",
-                items: { $ref: "#/components/schemas/Post" },
+                items: { $ref: "#/components/schemas/PostWithPopulatedSender" },
               },
             },
           },
@@ -549,7 +657,7 @@ const manualPaths = {
           description: "Post details",
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/Post" },
+              schema: { $ref: "#/components/schemas/PostWithPopulatedSender" },
             },
           },
         },
@@ -583,7 +691,15 @@ const manualPaths = {
         },
       },
       responses: {
-        200: { description: "Post updated successfully" },
+        200: {
+          description: "Post updated successfully",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Post" },
+            },
+          },
+        },
+        400: { description: "Invalid input data or cannot change creator" },
         401: { description: "Unauthorized" },
         403: { description: "Forbidden - Not the post creator" },
         404: { description: "Post not found" },
@@ -602,7 +718,14 @@ const manualPaths = {
         },
       ],
       responses: {
-        200: { description: "Post deleted successfully" },
+        200: {
+          description: "Post deleted successfully",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Post" },
+            },
+          },
+        },
         401: { description: "Unauthorized" },
         403: { description: "Forbidden - Not the post creator" },
         404: { description: "Post not found" },
@@ -628,7 +751,7 @@ const manualPaths = {
             "application/json": {
               schema: {
                 type: "array",
-                items: { $ref: "#/components/schemas/Comment" },
+                items: { $ref: "#/components/schemas/CommentWithPopulatedSender" },
               },
             },
           },
@@ -684,7 +807,7 @@ const manualPaths = {
           description: "Comment details",
           content: {
             "application/json": {
-              schema: { $ref: "#/components/schemas/Comment" },
+              schema: { $ref: "#/components/schemas/CommentWithPopulatedSender" },
             },
           },
         },
@@ -718,7 +841,15 @@ const manualPaths = {
         },
       },
       responses: {
-        200: { description: "Comment updated successfully" },
+        200: {
+          description: "Comment updated successfully",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Comment" },
+            },
+          },
+        },
+        400: { description: "Invalid input data" },
         401: { description: "Unauthorized" },
         403: { description: "Forbidden - Not the comment creator" },
         404: { description: "Comment not found" },
@@ -737,7 +868,14 @@ const manualPaths = {
         },
       ],
       responses: {
-        200: { description: "Comment deleted successfully" },
+        200: {
+          description: "Comment deleted successfully",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Comment" },
+            },
+          },
+        },
         401: { description: "Unauthorized" },
         403: { description: "Forbidden - Not the comment creator" },
         404: { description: "Comment not found" },

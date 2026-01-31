@@ -62,9 +62,7 @@ class UsersController extends baseController {
       return await super.update(req, res);
     } catch (err) {
       console.error(err);
-      return res
-        .status(500)
-        .json({ message: "Error updating user" });
+      return res.status(500).json({ message: "Error updating user" });
     }
   }
 

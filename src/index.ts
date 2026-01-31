@@ -1,5 +1,6 @@
 import express, { Express } from "express";
 import mongoose from "mongoose";
+import cors from "cors";
 import postRouter from "./routes/postRoute";
 import commentRouter from "./routes/commentRoute";
 import authRoute from "./routes/authRoute";
@@ -10,6 +11,7 @@ import dotenv from "dotenv";
 dotenv.config({ path: ".env.dev" });
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Swagger UI setup
