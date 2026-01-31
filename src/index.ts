@@ -1,8 +1,9 @@
 import express, { Express } from "express";
 import mongoose from "mongoose";
 import postRouter from "./routes/postRoute";
-import commentRouter from './routes/commentRoute'
+import commentRouter from "./routes/commentRoute";
 import authRoute from "./routes/authRoute";
+import userRouter from "./routes/userRoute";
 // import { swaggerUi, swaggerSpec } from "./swagger";
 
 import dotenv from "dotenv";
@@ -25,6 +26,7 @@ app.use(express.json());
 // API routes
 app.use("/post", postRouter);
 app.use("/comment", commentRouter);
+app.use("/user", userRouter);
 app.use("/auth", authRoute);
 
 // Swagger JSON endpoint

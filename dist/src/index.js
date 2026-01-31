@@ -8,6 +8,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const postRoute_1 = __importDefault(require("./routes/postRoute"));
 const commentRoute_1 = __importDefault(require("./routes/commentRoute"));
 const authRoute_1 = __importDefault(require("./routes/authRoute"));
+const userRoute_1 = __importDefault(require("./routes/userRoute"));
 // import { swaggerUi, swaggerSpec } from "./swagger";
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config({ path: ".env.dev" });
@@ -27,6 +28,7 @@ app.use(express_1.default.json());
 app.use("/post", postRoute_1.default);
 app.use("/comment", commentRoute_1.default);
 app.use("/auth", authRoute_1.default);
+app.use("/user", userRoute_1.default);
 // Swagger JSON endpoint
 // app.get("/api-docs.json", (req, res) => {
 //   res.setHeader("Content-Type", "application/json");
