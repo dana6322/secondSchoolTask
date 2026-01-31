@@ -6,9 +6,10 @@ const commentSchema = new mongoose.Schema({
     ref: "post",
     required: true,
   },
-  // later change to ref
+
   sender: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
     required: true,
   },
   message: {

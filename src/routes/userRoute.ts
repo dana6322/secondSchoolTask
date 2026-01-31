@@ -1,34 +1,34 @@
 import express from "express";
-import postController from "../controllers/postController";
+import userController from "../controllers/userController";
 import { authenticate } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
 /**
  * @swagger
- * /post:
+ * /user:
  *   get:
- *     tags: [Posts]
- *     summary: Get all posts
- *     description: Retrieve a list of all posts in the database
+ *     tags: [Users]
+ *     summary: Get all users
+ *     description: Retrieve a list of all users in the system
  *     responses:
  *       200:
- *         description: List of posts retrieved successfully
+ *         description: List of users retrieved successfully
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
- *                 $ref: '#/components/schemas/Post'
+ *                 $ref: '#/components/schemas/User'
  *             example:
  *               - _id: "507f1f77bcf86cd799439011"
- *                 text: "This is my first post!"
- *                 img: "https://example.com/image.jpg"
- *                 sender: "507f1f77bcf86cd799439012"
- *               - _id: "507f1f77bcf86cd799439013"
- *                 text: "Another amazing post"
- *                 img: "https://example.com/image2.jpg"
- *                 sender: "507f1f77bcf86cd799439014"
+ *                 email: "user1@example.com"
+ *                 userName: "user1"
+ *                 refreshTokens: []
+ *               - _id: "507f1f77bcf86cd799439012"
+ *                 email: "user2@example.com"
+ *                 userName: "user2"
+ *                 refreshTokens: []
  *       500:
  *         description: Internal server error
  *         content:
@@ -36,9 +36,9 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *   post:
- *     tags: [Posts]
- *     summary: Create a new post
- *     description: Create a new post (requires authentication). The sender is automatically set to the authenticated user's ID
+ *     tags: [Users]
+ *     summary: Create a new user
+ *     description: Create a new user profile (requires authentication)
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -48,24 +48,24 @@ const router = express.Router();
  *           schema:
  *             type: object
  *             required:
- *               - text
- *               - img
+ *               - email
  *             properties:
- *               text:
+ *               email:
  *                 type: string
- *                 description: Post content
- *                 example: "This is my first post!"
- *               img:
+ *                 format: email
+ *                 description: User's email address
+ *                 example: "newuser@example.com"
+ *               userName:
  *                 type: string
- *                 description: Image URL for the post
- *                 example: "https://example.com/image.jpg"
+ *                 description: User's username
+ *                 example: "newuser"
  *     responses:
  *       201:
- *         description: Post created successfully
+ *         description: User created successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/User'
  *       400:
  *         description: Invalid input data
  *         content:
@@ -73,7 +73,7 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Text and image are required"
+ *               message: "Email is required"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
@@ -82,6 +82,14 @@ const router = express.Router();
  *               $ref: '#/components/schemas/Error'
  *             example:
  *               message: "Access token required"
+ *       409:
+ *         description: User already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             example:
+ *               message: "User with this email already exists"
  *       500:
  *         description: Internal server error
  *         content:
@@ -89,50 +97,50 @@ const router = express.Router();
  *             schema:
  *               $ref: '#/components/schemas/Error'
  */
-router.get("/", postController.getAll.bind(postController));
+router.get("/", userController.getAll.bind(userController));
 
 /**
  * @swagger
- * /post/{id}:
+ * /user/{id}:
  *   get:
- *     tags: [Posts]
- *     summary: Get post by ID
- *     description: Retrieve a specific post by its ID
+ *     tags: [Users]
+ *     summary: Get user by ID
+ *     description: Retrieve a specific user by their ID
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Post ID (MongoDB ObjectId)
+ *         description: User ID (MongoDB ObjectId)
  *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Post retrieved successfully
+ *         description: User retrieved successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/User'
  *       404:
- *         description: Post not found
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Post not found"
+ *               message: "User not found"
  *       400:
- *         description: Invalid post ID format
+ *         description: Invalid user ID format
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Invalid post ID"
+ *               message: "Invalid user ID"
  *   put:
- *     tags: [Posts]
- *     summary: Update a post
- *     description: Update a specific post (requires authentication and ownership). Only the creator can update their post
+ *     tags: [Users]
+ *     summary: Update a user
+ *     description: Update a specific user (requires authentication). Only the authenticated user can update their own profile
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -141,7 +149,7 @@ router.get("/", postController.getAll.bind(postController));
  *         required: true
  *         schema:
  *           type: string
- *         description: Post ID (MongoDB ObjectId)
+ *         description: User ID (MongoDB ObjectId)
  *         example: "507f1f77bcf86cd799439011"
  *     requestBody:
  *       required: true
@@ -150,29 +158,30 @@ router.get("/", postController.getAll.bind(postController));
  *           schema:
  *             type: object
  *             properties:
- *               text:
+ *               email:
  *                 type: string
- *                 description: Updated post content
- *                 example: "Updated post text"
- *               img:
+ *                 format: email
+ *                 description: Updated email address
+ *                 example: "updated@example.com"
+ *               userName:
  *                 type: string
- *                 description: Updated image URL
- *                 example: "https://example.com/updated-image.jpg"
+ *                 description: Updated username
+ *                 example: "updatedusername"
  *     responses:
  *       200:
- *         description: Post updated successfully
+ *         description: User updated successfully
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Post'
+ *               $ref: '#/components/schemas/User'
  *       400:
- *         description: Invalid input data (cannot change creator)
+ *         description: Invalid input data
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Cannot change post creator"
+ *               message: "Invalid user data"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
@@ -182,25 +191,25 @@ router.get("/", postController.getAll.bind(postController));
  *             example:
  *               message: "Access token required"
  *       403:
- *         description: Forbidden - Not the post creator
+ *         description: Forbidden - Can only update own profile
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "You can only update posts you created"
+ *               message: "You can only update your own profile"
  *       404:
- *         description: Post not found
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Post not found"
+ *               message: "User not found"
  *   delete:
- *     tags: [Posts]
- *     summary: Delete a post
- *     description: Delete a specific post (requires authentication and ownership). Only the creator can delete their post
+ *     tags: [Users]
+ *     summary: Delete a user
+ *     description: Delete a specific user (requires authentication). Only the authenticated user can delete their own account
  *     security:
  *       - bearerAuth: []
  *     parameters:
@@ -209,11 +218,11 @@ router.get("/", postController.getAll.bind(postController));
  *         required: true
  *         schema:
  *           type: string
- *         description: Post ID (MongoDB ObjectId)
+ *         description: User ID (MongoDB ObjectId)
  *         example: "507f1f77bcf86cd799439011"
  *     responses:
  *       200:
- *         description: Post deleted successfully
+ *         description: User deleted successfully
  *         content:
  *           application/json:
  *             schema:
@@ -221,7 +230,7 @@ router.get("/", postController.getAll.bind(postController));
  *               properties:
  *                 message:
  *                   type: string
- *                   example: "Post deleted successfully"
+ *                   example: "User deleted successfully"
  *       401:
  *         description: Unauthorized - Invalid or missing token
  *         content:
@@ -231,28 +240,28 @@ router.get("/", postController.getAll.bind(postController));
  *             example:
  *               message: "Access token required"
  *       403:
- *         description: Forbidden - Not the post creator
+ *         description: Forbidden - Can only delete own account
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "You can only delete posts you created"
+ *               message: "You can only delete your own account"
  *       404:
- *         description: Post not found
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             example:
- *               message: "Post not found"
+ *               message: "User not found"
  */
-router.get("/:id", postController.getById.bind(postController));
+router.get("/:id", userController.getById.bind(userController));
 
-router.post("/", authenticate, postController.create.bind(postController));
+router.post("/", authenticate, userController.create.bind(userController));
 
-router.delete("/:id", authenticate, postController.del.bind(postController));
+router.delete("/:id", authenticate, userController.del.bind(userController));
 
-router.put("/:id", authenticate, postController.update.bind(postController));
+router.put("/:id", authenticate, userController.update.bind(userController));
 
 export default router;
