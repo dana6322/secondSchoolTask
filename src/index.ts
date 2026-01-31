@@ -2,21 +2,42 @@ import express, { Express } from "express";
 import mongoose from "mongoose";
 import postRouter from "./routes/postRoute";
 import commentRouter from './routes/commentRoute'
+import authRoute from "./routes/authRoute";
+// import { swaggerUi, swaggerSpec } from "./swagger";
+
 import dotenv from "dotenv";
-dotenv.config({ path: '.env.dev' });
+dotenv.config({ path: ".env.dev" });
 
 const app = express();
-
 app.use(express.json());
 
+// Swagger UI setup
+// app.use(
+//   "/api-docs",
+//   swaggerUi.serve,
+//   swaggerUi.setup(swaggerSpec, {
+//     explorer: true,
+//     customCss: ".swagger-ui .topbar { display: none }",
+//     customSiteTitle: "Posts & Comments API Documentation",
+//   }),
+// );
+
+// API routes
 app.use("/post", postRouter);
 app.use("/comment", commentRouter);
+app.use("/auth", authRoute);
 
-const initApp = async () => {
+// Swagger JSON endpoint
+// app.get("/api-docs.json", (req, res) => {
+//   res.setHeader("Content-Type", "application/json");
+//   res.send(swaggerSpec);
+// });
+
+const initApp = () => {
   const pr = new Promise<Express>((resolve, reject) => {
     const dbUrl = process.env.DATABASE_URL;
     if (!dbUrl) {
-      reject("DATABASE_URL is not defined in environment variables");
+      reject("DATABASE_URL is not defined");
       return;
     }
     mongoose.connect(dbUrl, {}).then(() => {

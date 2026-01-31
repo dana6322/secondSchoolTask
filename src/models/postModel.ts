@@ -9,9 +9,9 @@ const postSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // for now later should ref user model
   sender: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
     required: true,
   },
 });
