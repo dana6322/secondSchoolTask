@@ -118,4 +118,47 @@ describe("Test Auth Suite", () => {
       .send({ refreshToken: newRefreshToken });
     expect(refreshResponse3.status).toBe(401);
   });
+
+  test("Test logout without refresh token fails", async () => {
+    const response = await request(app).post("/auth/logout").send({});
+    expect(response.status).toBe(400);
+    expect(response.body.message).toBe("Refresh token is required");
+  });
+
+  test("Test logout with invalid refresh token fails", async () => {
+    const response = await request(app)
+      .post("/auth/logout")
+      .send({ refreshToken: "invalidToken" });
+    expect(response.status).toBe(401);
+  });
+
+  test("Test logout succeeds", async () => {
+    // Register a new user for logout test with unique email and username
+    const uniqueEmail = `logouttest${Date.now()}@example.com`;
+    const uniqueUsername = `logoutuser${Date.now()}`;
+    const registerResponse = await request(app)
+      .post("/auth/register")
+      .send({
+        email: uniqueEmail,
+        password: "password123",
+        userName: uniqueUsername,
+      });
+    expect(registerResponse.status).toBe(201);
+    const logoutRefreshToken = registerResponse.body.refreshToken;
+
+    // Perform logout
+    const logoutResponse = await request(app)
+      .post("/auth/logout")
+      .send({ refreshToken: logoutRefreshToken });
+    expect(logoutResponse.status).toBe(200);
+    expect(logoutResponse.body.message).toBe(
+      "User successfully logged out"
+    );
+
+    // Try to use the refresh token after logout - should fail
+    const refreshAfterLogout = await request(app)
+      .post("/auth/refresh")
+      .send({ refreshToken: logoutRefreshToken });
+    expect(refreshAfterLogout.status).toBe(401);
+  });
 });

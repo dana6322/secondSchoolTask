@@ -112,8 +112,32 @@ const refreshToken = async (req: Request, res: Response) => {
   }
 };
 
+const logout = async (req: Request, res: Response) => {
+  const refreshToken = req.body.refreshToken;
+  if (!refreshToken) {
+    return sendError(400, "Refresh token is required", res);
+  }
+  try {
+    const secret = process.env.JWT_SECRET || "default_secret";
+    const decoded = jwt.verify(refreshToken, secret) as { _id: string };
+    const user = await User.findById(decoded._id);
+    if (!user) {
+      return sendError(401, "Invalid refresh token", res);
+    }
+    // Remove the refresh token from the user's refreshTokens array
+    user.refreshTokens = user.refreshTokens.filter(
+      (token) => token !== refreshToken,
+    );
+    await user.save();
+    res.status(200).json({ message: "User successfully logged out" });
+  } catch (err) {
+    return sendError(401, "Invalid refresh token", res);
+  }
+};
+
 export default {
   register,
   login,
   refreshToken,
+  logout,
 };
