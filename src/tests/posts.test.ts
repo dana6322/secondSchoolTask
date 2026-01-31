@@ -34,6 +34,8 @@ describe("Sample Test Suite", () => {
       expect(response.status).toBe(201);
       expect(response.body.text).toBe(post.text);
       expect(response.body.img).toBe(post.img);
+      expect(response.body).toHaveProperty("createdAt");
+      expect(response.body).toHaveProperty("updatedAt");
     }
   });
 
@@ -59,6 +61,8 @@ describe("Sample Test Suite", () => {
     expect(response.body.text).toBe(postsList[0].text);
     expect(response.body.img).toBe(postsList[0].img);
     expect(response.body._id).toBe(postId);
+    expect(response.body).toHaveProperty("createdAt");
+    expect(response.body).toHaveProperty("updatedAt");
   });
 
   test("Update Post", async () => {

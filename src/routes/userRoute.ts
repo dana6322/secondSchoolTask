@@ -101,6 +101,64 @@ router.get("/", userController.getAll.bind(userController));
 
 /**
  * @swagger
+ * /user/me:
+ *   get:
+ *     tags: [Users]
+ *     summary: Get current authenticated user profile
+ *     description: Retrieve the current authenticated user's complete profile
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Current user profile retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 userName:
+ *                   type: string
+ *                 firstName:
+ *                   type: string
+ *                 lastName:
+ *                   type: string
+ *                 bio:
+ *                   type: string
+ *                 profilePicture:
+ *                   type: string
+ *                 createdAt:
+ *                   type: string
+ *                   format: date-time
+ *                 updatedAt:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized - Invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.get("/me", authenticate, userController.getCurrentUser.bind(userController));
+
+/**
+ * @swagger
  * /user/{id}:
  *   get:
  *     tags: [Users]

@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import User from "../models/userModel";
 import jwt from "jsonwebtoken";
+import { AuthRequest } from "../middleware/authMiddleware";
 
 const sendError = (code: number, message: string, res: Response) => {
   res.status(code).json({ message });
@@ -135,9 +136,59 @@ const logout = async (req: Request, res: Response) => {
   }
 };
 
+const changePassword = async (req: AuthRequest, res: Response) => {
+  const currentPassword = req.body.currentPassword;
+  const newPassword = req.body.newPassword;
+
+  if (!currentPassword || !newPassword) {
+    return sendError(
+      400,
+      "Current password and new password are required",
+      res,
+    );
+  }
+
+  if (currentPassword === newPassword) {
+    return sendError(
+      400,
+      "New password must be different from current password",
+      res,
+    );
+  }
+
+  try {
+    if (!req.user) {
+      return sendError(401, "Unauthorized", res);
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return sendError(404, "User not found", res);
+    }
+
+    // Verify current password
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return sendError(401, "Current password is incorrect", res);
+    }
+
+    // Hash new password and update
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (err) {
+    console.error(err);
+    return sendError(500, "Internal server error", res);
+  }
+};
+
 export default {
   register,
   login,
   refreshToken,
   logout,
+  changePassword,
 };

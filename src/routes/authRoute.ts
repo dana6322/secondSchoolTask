@@ -1,5 +1,6 @@
 import express from "express";
 import authController from "../controllers/authController";
+import { authenticate } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
@@ -260,5 +261,73 @@ router.post("/refresh", authController.refreshToken);
  *               $ref: '#/components/schemas/Error'
  */
 router.post("/logout", authController.logout);
+
+/**
+ * @swagger
+ * /auth/changePassword:
+ *   post:
+ *     tags: [Authentication]
+ *     summary: Change user password
+ *     description: Change the password of the authenticated user
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: User's current password
+ *                 example: "oldPassword123"
+ *               newPassword:
+ *                 type: string
+ *                 description: User's new password
+ *                 example: "newPassword123"
+ *     responses:
+ *       200:
+ *         description: Password changed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Invalid input or new password same as current
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized or incorrect current password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+router.post(
+  "/changePassword",
+  authenticate,
+  authController.changePassword,
+);
 
 export default router;
