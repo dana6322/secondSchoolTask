@@ -4,7 +4,7 @@ import postRouter from "./routes/postRoute";
 import commentRouter from "./routes/commentRoute";
 import authRoute from "./routes/authRoute";
 import userRouter from "./routes/userRoute";
-// import { swaggerUi, swaggerSpec } from "./swagger";
+import { swaggerUi, swaggerSpec } from "./swagger";
 
 import dotenv from "dotenv";
 dotenv.config({ path: ".env.dev" });
@@ -13,15 +13,15 @@ const app = express();
 app.use(express.json());
 
 // Swagger UI setup
-// app.use(
-//   "/api-docs",
-//   swaggerUi.serve,
-//   swaggerUi.setup(swaggerSpec, {
-//     explorer: true,
-//     customCss: ".swagger-ui .topbar { display: none }",
-//     customSiteTitle: "Posts & Comments API Documentation",
-//   }),
-// );
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "Posts & Comments & Users API Documentation",
+  }),
+);
 
 // API routes
 app.use("/post", postRouter);
@@ -30,10 +30,10 @@ app.use("/user", userRouter);
 app.use("/auth", authRoute);
 
 // Swagger JSON endpoint
-// app.get("/api-docs.json", (req, res) => {
-//   res.setHeader("Content-Type", "application/json");
-//   res.send(swaggerSpec);
-// });
+app.get("/api-docs.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+  res.send(swaggerSpec);
+});
 
 const initApp = () => {
   const pr = new Promise<Express>((resolve, reject) => {
